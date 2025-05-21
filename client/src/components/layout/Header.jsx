@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-//styles >>
+//redux>>----------------------
+import { useSelector, useDispatch } from "react-redux";
+//actions
+import { logout } from "../../features/auth/authSlice";
+//selectors
+import { selectCurrentUser, selectIsLoggedIn } from "../../features/auth/authSlice";
+
+//styles >>---------------------
 import styled from "styled-components";
 // ===============================================
-// styled-components
+// styled-components--------
 const Nav = styled.nav`
   display: flex;
   justify-content: space-between;
@@ -39,42 +46,18 @@ const Logo = styled(Link)`
 `;
 
 export default function Header() {
-  //state userInfo>>
-  const [userInfo, setUserInfo] = useState(null);
-
+  //redux>>
+  const dispatch = useDispatch();
   //navigate
   const navigate = useNavigate();
 
-  //get user info from local storage
-  useEffect(() => {
-    //خواندن اطلاعات کاربر از localStorage >>
-    const storedUserInfo = localStorage.getItem("userInfo");
-    if (storedUserInfo) {
-      setUserInfo(JSON.parse(storedUserInfo));
-    }
-  }, []);
-
-  //set user info to local storage
-  useEffect(() => {
-    const updateUserInfo = () => {
-      const storedUserInfo = localStorage.getItem("userInfo");
-      setUserInfo(storedUserInfo) ? JSON.parse(storedUserInfo) : null;
-    };
-
-    updateUserInfo();
-
-    window.addEventListener("userInfoChanged", updateUserInfo);
-
-    return () => {
-      window.removeEventListener("userInfoChanged", updateUserInfo);
-    };
-  }, []);
+  // خواندن اطلاعات کاربر و وضعیت لاگین از Redux store-------------
+  const currentUser = useSelector(selectCurrentUser);
+  const isLoggedIn = useSelector(selectIsLoggedIn);
 
   //handle logout
   const handleLogout = () => {
-    //حذف اطلاعات کاربر از localStorage
-    localStorage.removeItem("userInfo");
-    setUserInfo(null);
+    dispatch(logout());
     navigate("/login");
   };
 
@@ -83,10 +66,10 @@ export default function Header() {
     <Nav>
       <Logo to="/">PhotoApp</Logo>
       <NavLinks>
-        {userInfo ? (
+        {isLoggedIn ? (
           <>
             {/* <Link to='/profile'>{userInfo.displayName || userInfo.username}</Link> */}
-            <span>wellCome ,{userInfo.displayName}...</span>
+            <span>wellCome {currentUser.displayName}</span>
             <button onClick={handleLogout}>logout</button>
           </>
         ) : (

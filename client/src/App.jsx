@@ -18,11 +18,12 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <GlobalStyles />
       <Router>
-        <Header/>
+        <Header />
         <Routes>
           <Route path="/" element={<div>Home</div>} />
-          <Route path="/login" element={<LoginPage/>} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </Router>
     </ThemeProvider>
