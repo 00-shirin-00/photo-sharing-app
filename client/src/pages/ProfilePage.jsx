@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 //redux >>
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 //selectors >>
 import {
   selectCurrentUser,
   selectIsLoggedIn,
-  selectIsLoading,
-  selectIsError,
+  selectAuthLoading,
+  selectAuthError,
   clearAuthError,
   authRequest,
+  authSuccess,
 } from "../features/auth/authSlice";
 
 //router >>
@@ -21,12 +22,11 @@ const ProfilePage = () => {
 
   const currentUser = useSelector(selectCurrentUser);
   const isLoggedIn = useSelector(selectIsLoggedIn);
-  const isLoading = useSelector(selectIsLoading);
-  const error = useSelector(selectIsError);
+  const isLoading = useSelector(selectAuthLoading);
+  const error = useSelector(selectAuthError);
 
   //To control the display of the edit form.
-  const [isEditMode, setIsEditMode] = useState(false);
-
+  const [isEditing, setIsEditing] = useState(false); // برای کنترل نمایش فرم ویرایش
   //for the edit form
   const [formData, setFormData] = useState({
     displayName: "",
@@ -49,7 +49,7 @@ const ProfilePage = () => {
   }, [currentUser, dispatch]);
 
   // اگر هنوز در حال لود اولیه نیست و لاگین هم نکرده
-  if(!isLoading && !isLoggedIn) {
+  if (!isLoading && !isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
 
@@ -60,19 +60,27 @@ const ProfilePage = () => {
 
   //handle change>>
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
-    //errror handling
+    setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) {
       dispatch(clearAuthError());
-    } 
+    }
+  };
+
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+    if (isEditing && currentUser) {
+      // اگر از حالت ویرایش خارج میشیم، فرم رو با اطلاعات فعلی ریست کن
+      setFormData({
+        displayName: currentUser.displayName || "",
+        bio: currentUser.bio || "",
+      });
+      dispatch(clearAuthError()); // خطاهای احتمالی ویرایش رو هم پاک کن
+    }
   };
   //handle submit>>
   const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(authRequest());// برای شروع درخواست
+    dispatch(authRequest()); // برای شروع درخواست
     try {
       // اینجا می‌تونید درخواست آپدیت پروفایل رو به سرور بزنید
       const API_URL = "/api/users/profile"; // آدرس API
@@ -92,46 +100,139 @@ const ProfilePage = () => {
         // profilePicture: formData.profilePicture,
       };
       const response = await axios.put(API_URL, updateData, config);
+      // بعد از آپدیت موفق، اطلاعات کاربر در Redux store رو با اطلاعات جدید آپدیت کن
+      // response.data باید شامل اطلاعات آپدیت شده کاربر باشه
+      // ما همچنین باید توکن قبلی رو هم به آبجکت جدید اضافه کنیم چون API آپدیت، توکن جدید برنمیگردونه
 
+      dispatch(
+        authSuccess({
+          ...response.data,
+          token: currentUser.token,
+        })
+      );
+
+      // بعد از آپدیت موفق، می‌تونید حالت ویرایش رو خاموش کنید
+      setIsEditMode(false);
+    } catch (error) {
+      const errorMessage =
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : "An error occurred while updating the profile.";
+
+      dispatch(authFail(errorMessage)); // dispatch اکشن خطا
     }
+  };
 
-
-
-  // if (!currentUser && isLoggedIn) {
-  //   // اگر لاگین هستیم ولی هنوز اطلاعات کاربر کامل نیست
-  //   return <div>در حال بارگذاری اطلاعات کاربر...</div>;
-  // }
-
-  // if (!currentUser && !isLoggedIn) {
-  //   // این حالت با ProtectedRoute نباید اتفاق بیفته
-  //   return <Navigate to="/login" replace />;
-  // }
   //////////////////////////////////////////////////////////////
   return (
-    <div style={{ padding: "20px" }}>
+    <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
       <h2>پروفایل کاربر</h2>
-      <p>
-        <strong>نام کاربری:</strong> {currentUser.username}
-      </p>
-      <p>
-        <strong>ایمیل:</strong> {currentUser.email}
-      </p>
-      <p>
-        <strong>نام نمایشی:</strong> {currentUser.displayName || "وارد نشده"}
-      </p>
-      <p>
-        <strong>بیوگرافی:</strong> {currentUser.bio || "وارد نشده"}
-      </p>
-      {currentUser.profilePicture && (
+      {isLoading && <p>در حال به‌روزرسانی...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {isEditing ? (
+        // فرم ویرایش
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+        >
+          <div>
+            <label htmlFor="displayName">نام نمایشی:</label>
+            <input
+              type="text"
+              id="displayName"
+              name="displayName"
+              value={formData.displayName}
+              onChange={handleChange}
+              style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+            />
+          </div>
+          <div>
+            <label htmlFor="bio">بیوگرافی:</label>
+            <textarea
+              id="bio"
+              name="bio"
+              value={formData.bio}
+              onChange={handleChange}
+              style={{
+                width: "100%",
+                padding: "8px",
+                marginTop: "5px",
+                minHeight: "80px",
+              }}
+            />
+          </div>
+          {/* آپلود عکس پروفایل بعدا اضافه میشه */}
+          <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+            <button
+              type="submit"
+              disabled={isLoading}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#28a745",
+                color: "white",
+              }}
+            >
+              {isLoading ? "ذخیره سازی..." : "ذخیره تغییرات"}
+            </button>
+            <button
+              type="button"
+              onClick={handleEditToggle}
+              disabled={isLoading}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#6c757d",
+                color: "white",
+              }}
+            >
+              انصراف
+            </button>
+          </div>
+        </form>
+      ) : (
+        // نمایش اطلاعات
         <div>
           <p>
-            <strong>عکس پروفایل:</strong>
+            <strong>نام کاربری:</strong> {currentUser.username}
           </p>
-          <img
-            src={currentUser.profilePicture}
-            alt="Profile"
-            style={{ width: "100px", height: "100px", borderRadius: "50%" }}
-          />
+          <p>
+            <strong>ایمیل:</strong> {currentUser.email}
+          </p>
+          <p>
+            <strong>نام نمایشی:</strong>{" "}
+            {currentUser.displayName || "هنوز وارد نشده"}
+          </p>
+          <p>
+            <strong>بیوگرافی:</strong> {currentUser.bio || "هنوز وارد نشده"}
+          </p>
+          {currentUser.profilePicture && (
+            <div style={{ marginTop: "10px" }}>
+              <p>
+                <strong>عکس پروفایل:</strong>
+              </p>
+              <img
+                src={currentUser.profilePicture}
+                alt="Profile"
+                style={{
+                  width: "100px",
+                  height: "100px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                }}
+              />
+            </div>
+          )}
+          <button
+            onClick={handleEditToggle}
+            style={{
+              marginTop: "20px",
+              padding: "10px 20px",
+              backgroundColor: "#007bff",
+              color: "white",
+            }}
+          >
+            ویرایش پروفایل
+          </button>
         </div>
       )}
     </div>
