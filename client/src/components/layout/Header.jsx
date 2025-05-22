@@ -10,6 +10,7 @@ import { selectCurrentUser, selectIsLoggedIn } from "../../features/auth/authSli
 
 //styles >>---------------------
 import styled from "styled-components";
+import ProfilePage from "../../pages/ProfilePage";
 // ===============================================
 // styled-components--------
 const Nav = styled.nav`
@@ -68,8 +69,7 @@ export default function Header() {
       <NavLinks>
         {isLoggedIn ? (
           <>
-            {/* <Link to='/profile'>{userInfo.displayName || userInfo.username}</Link> */}
-            <span>wellCome {currentUser.displayName}</span>
+            <Link to='/profile'>profile</Link>
             <button onClick={handleLogout}>logout</button>
           </>
         ) : (

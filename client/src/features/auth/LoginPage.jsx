@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 //router
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 //redux>>-----------------------------------
 //hooks
@@ -35,6 +35,12 @@ export default function LoginPage() {
   const dispatch = useDispatch();
   //router>>-----------------------------
   const navigate = useNavigate();
+  const location = useLocation(); // گرفتن آبجکت location
+
+  //location >>----------------------
+  // اگر کاربر از قبل لاگین کرده باشه، به صفحه اصلی هدایتش می کنیم
+  // و اگر لاگین نکرده باشه، به صفحه ای که می خواسته بره هدایتش می کنیم
+  const form = location.state?.form?.pathname || "/";
 
   //selectors>>----------------------
   const isLoggedIn = useSelector(selectIsLoggedIn);
@@ -48,9 +54,9 @@ export default function LoginPage() {
   // اگر کاربر از قبل لاگین کرده باشه، به صفحه اصلی هدایتش می کنیم
   useEffect(() => {
     if (isLoggedIn) {
-      navigate("/");
+      navigate(form, { replace: true }); // به مسیر قبلی یا صفحه اصلی هدایت شود
     }
-  }, [isLoggedIn, navigate]);
+  }, [isLoggedIn, navigate,form]);
 
   // پاک کردن خطای قبلی وقتی کاربر شروع به تایپ می کنه (اختیاری)---------------------
   useEffect(() => {
@@ -94,7 +100,7 @@ export default function LoginPage() {
       const errorMessage =
         err.response && err.response.data
           ? err.response.data.message
-          : 'username or password is incorrect';
+          : "username or password is incorrect";
       dispatch(authFail(errorMessage)); // Update Redux state with error message
       console.error("Login error:", errorMessage);
     }
