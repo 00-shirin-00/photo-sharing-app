@@ -19,6 +19,8 @@ import {
   selectAuthError,
   selectIsLoggedIn,
 } from "./authSlice";
+// api >>
+
 import api from "../../utils/api";
 
 // =========================================================================
@@ -169,7 +171,7 @@ export default function LoginPage() {
         </button>
       </form>
       <p style={{ marginTop: "15px" }}>
-        you don't have an account?{" "}
+        you don't have an account?
         <Link
           to="/register"
           style={{ color: "#007bff", textDecoration: "underline" }}

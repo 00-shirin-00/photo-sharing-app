@@ -4,7 +4,7 @@
 // این فایل برای تنظیمات axios و اضافه کردن توکن به هدر درخواست‌ها استفاده می‌شود
 
 import axios from "axios";
-import store from "./store/store"; // برای دسترسی به state و توکن
+import store from "../store/store"; // برای دسترسی به state و توکن
 // =================================================================
 const api = axios.create({
   baseURL: "/api", // آدرس پایه API (با فرض تنظیم پراکسی در Vite)
@@ -23,11 +23,14 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    return Promise.reject(error);
+      return Promise.reject(error);
+    //   این کار باعث می‌شود که هر جایی که از api استفاده می‌کنی (مثلاً با await یا .catch)، بتوانی خطا را مدیریت کنی.
+    // Promise.reject(error) یعنی یک خطا رخ داده و این خطا را به کد فراخواننده منتقل کن تا بتواند آن را مدیریت کند.
+
   }
 );
 
-// (اختیاری) Response Interceptor: برای مدیریت خطاهای ۴۰۱ سراسری یا موارد دیگه
+//  Response Interceptor: برای مدیریت خطاهای ۴۰۱ سراسری یا موارد دیگه
 // api.interceptors.response.use(
 //   (response) => response,
 //   (error) => {

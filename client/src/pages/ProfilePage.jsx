@@ -14,7 +14,8 @@ import {
 } from "../features/auth/authSlice";
 
 //router >>
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+// api >>
 import api from "../utils/api";
 // =============================================================
 
@@ -27,6 +28,8 @@ const ProfilePage = () => {
   const isLoading = useSelector(selectAuthLoading);
   const error = useSelector(selectAuthError);
 
+  // navigate >>----------------------
+  const navigate = useNavigate();
   // states -----------------------------------------
   //To control the display of the edit form or profile information
   const [isEditing, setIsEditing] = useState(false); // برای کنترل نمایش فرم ویرایش
@@ -47,18 +50,27 @@ const ProfilePage = () => {
       });
     }
     return () => {
+      // هنگام ورود به صفحه یا unmount شدن، خطای قبلی را پاک کن
       dispatch(clearAuthError());
     };
   }, [currentUser, dispatch]);
 
+
+
+  // اگر در حال لود اولیه هستیم
+  if (isLoading && !currentUser && !isLoggedIn) {
+    return <div>در حال بارگذاری...</div>;
+  }
   // اگر هنوز در حال لود اولیه نیست و لاگین هم نکرده
   if (!isLoading && !isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
-
-  // اگر در حال لود اولیه هستیم
-  if (isLoading) {
-    return <div>در حال بارگذاری...</div>;
+  if (!currentUser) {
+    return (
+      <div>
+        در حال بارگذاری اطلاعات کاربر... (ممکن است نیاز به fetch مجدد باشد)
+      </div>
+    );
   }
 
   //handle change>>------------------------------
@@ -87,42 +99,43 @@ const ProfilePage = () => {
     e.preventDefault();
     dispatch(authRequest()); // برای شروع درخواست
     try {
-      const API_URL = "/api/users/profile"; // آدرس API
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
+      const API_URL = "/users/profile"; // آدرس API
+      // const config = {
+      //   headers: {
+      //     "Content-Type": "application/json",
 
-          //  توکن در Redux store (currentUser.token) هست و از اونجا می خونیم
-          Authorization: `Bearer ${currentUser.token}`, // توکن کاربر
-        },
-      };
+      //     //  توکن در Redux store (currentUser.token) هست و از اونجا می خونیم
+      //     Authorization: `Bearer ${currentUser.token}`, // توکن کاربر
+      //   },
+      // };
       // فیلدهایی که می خوایم آپدیت بشن
       const updateData = {
         displayName: formData.displayName,
         bio: formData.bio,
         // profilePicture: formData.profilePicture,
       };
-
-      
+      console.log("فیلدهایی که می خوایم آپدیت بش", updateData);
       // توکن به صورت خودکار به هدر اضافه می‌شود (نیازی به config نیست).
-      const response = await api.put(API_URL, updateData);
+      const response = await api.patch(API_URL, updateData);
       // بعد از آپدیت موفق، اطلاعات کاربر در Redux store رو با اطلاعات جدید آپدیت کن
       // response.data باید شامل اطلاعات آپدیت شده کاربر باشه
       // ما همچنین باید توکن قبلی رو هم به آبجکت جدید اضافه کنیم چون API آپدیت، توکن جدید برنمیگردونه
 
-      console.log(response.data);
-
+      console.log("اطلاعات کاربرbefor", response.data);
+      console.log("current before update", currentUser);
       dispatch(
         authSuccess({
+          ...currentUser,
           ...response.data,
           token: currentUser.token,
         })
       );
+      console.log("current after update", currentUser);
+      console.log("اطلاعات کاربرafter", response.data);
 
       // بعد از آپدیت موفق، می‌تونید حالت ویرایش رو خاموش کنید
-      setIsEditMode(false);
-
-
+      setIsEditing(false);
+      navigate("/profile");
     } catch (error) {
       const errorMessage =
         error.response && error.response.data && error.response.data.message

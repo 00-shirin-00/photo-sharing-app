@@ -69,7 +69,7 @@ export default function Header() {
       <NavLinks>
         {isLoggedIn ? (
           <>
-            <Link to='/profile'>profile</Link>
+            <Link to="/profile">profile {currentUser.displayName}</Link>
             <button onClick={handleLogout}>logout</button>
           </>
         ) : (
