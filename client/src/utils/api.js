@@ -1,7 +1,11 @@
-// client/src/api.js
+// axiosConfig;
+// Interceptor
+
+// این فایل برای تنظیمات axios و اضافه کردن توکن به هدر درخواست‌ها استفاده می‌شود
+
 import axios from "axios";
 import store from "./store/store"; // برای دسترسی به state و توکن
-
+// =================================================================
 const api = axios.create({
   baseURL: "/api", // آدرس پایه API (با فرض تنظیم پراکسی در Vite)
   headers: {

@@ -19,6 +19,7 @@ import {
   selectAuthError,
   selectIsLoggedIn,
 } from "./authSlice";
+import api from "../../utils/api";
 
 // =========================================================================
 //proxy vite.config.js
@@ -89,7 +90,7 @@ export default function LoginPage() {
       };
 
       // Send login request to the server
-      const response = await axios.post(`${API_URL}/login`, body, config);
+      const response = await api.post(`${API_URL}/login`, body);
 
       dispatch(authSuccess(response.data)); // Update Redux state with user info
 

@@ -10,10 +10,12 @@ import {
   clearAuthError,
   authRequest,
   authSuccess,
+  authFail,
 } from "../features/auth/authSlice";
 
 //router >>
 import { Navigate } from "react-router-dom";
+import api from "../utils/api";
 // =============================================================
 
 const ProfilePage = () => {
@@ -25,15 +27,16 @@ const ProfilePage = () => {
   const isLoading = useSelector(selectAuthLoading);
   const error = useSelector(selectAuthError);
 
-  //To control the display of the edit form.
+  // states -----------------------------------------
+  //To control the display of the edit form or profile information
   const [isEditing, setIsEditing] = useState(false); // برای کنترل نمایش فرم ویرایش
-  //for the edit form
+  //to store the values of the edite form
   const [formData, setFormData] = useState({
     displayName: "",
     bio: "",
     // profilePicture: '',
   });
-
+  // -----------------------------------------------------
   // وقتی کامپوننت لود میشه یا currentUser تغییر می کنه، formData رو با اطلاعات کاربر پر کن
   useEffect(() => {
     if (currentUser) {
@@ -58,14 +61,15 @@ const ProfilePage = () => {
     return <div>در حال بارگذاری...</div>;
   }
 
-  //handle change>>
+  //handle change>>------------------------------
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) {
       dispatch(clearAuthError());
     }
   };
-
+  //handle edit toggle>>------------------------------
+  // این تابع برای تغییر حالت ویرایش استفاده میشه
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
     if (isEditing && currentUser) {
@@ -77,19 +81,18 @@ const ProfilePage = () => {
       dispatch(clearAuthError()); // خطاهای احتمالی ویرایش رو هم پاک کن
     }
   };
-  //handle submit>>
+
+  //handle submit>>------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     dispatch(authRequest()); // برای شروع درخواست
     try {
-      // اینجا می‌تونید درخواست آپدیت پروفایل رو به سرور بزنید
       const API_URL = "/api/users/profile"; // آدرس API
       const config = {
         headers: {
           "Content-Type": "application/json",
 
           //  توکن در Redux store (currentUser.token) هست و از اونجا می خونیم
-
           Authorization: `Bearer ${currentUser.token}`, // توکن کاربر
         },
       };
@@ -99,10 +102,15 @@ const ProfilePage = () => {
         bio: formData.bio,
         // profilePicture: formData.profilePicture,
       };
-      const response = await axios.put(API_URL, updateData, config);
+
+      
+      // توکن به صورت خودکار به هدر اضافه می‌شود (نیازی به config نیست).
+      const response = await api.put(API_URL, updateData);
       // بعد از آپدیت موفق، اطلاعات کاربر در Redux store رو با اطلاعات جدید آپدیت کن
       // response.data باید شامل اطلاعات آپدیت شده کاربر باشه
       // ما همچنین باید توکن قبلی رو هم به آبجکت جدید اضافه کنیم چون API آپدیت، توکن جدید برنمیگردونه
+
+      console.log(response.data);
 
       dispatch(
         authSuccess({
@@ -113,6 +121,8 @@ const ProfilePage = () => {
 
       // بعد از آپدیت موفق، می‌تونید حالت ویرایش رو خاموش کنید
       setIsEditMode(false);
+
+
     } catch (error) {
       const errorMessage =
         error.response && error.response.data && error.response.data.message
@@ -125,7 +135,17 @@ const ProfilePage = () => {
 
   //////////////////////////////////////////////////////////////
   return (
-    <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
+    <div
+      style={{
+        padding: "20px",
+        maxWidth: "600px",
+        margin: "auto",
+        marginTop: "10px",
+        border: "black solid 2px",
+        borderRadius: "20px",
+        lineHeight: "35px",
+      }}
+    >
       <h2>پروفایل کاربر</h2>
       {isLoading && <p>در حال به‌روزرسانی...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -137,7 +157,7 @@ const ProfilePage = () => {
           style={{ display: "flex", flexDirection: "column", gap: "15px" }}
         >
           <div>
-            <label htmlFor="displayName">نام نمایشی:</label>
+            <label htmlFor="displayName">نام نمایشی =</label>
             <input
               type="text"
               id="displayName"
@@ -193,17 +213,17 @@ const ProfilePage = () => {
         // نمایش اطلاعات
         <div>
           <p>
-            <strong>نام کاربری:</strong> {currentUser.username}
+            <strong>نام کاربری : </strong> {currentUser.username}
           </p>
           <p>
-            <strong>ایمیل:</strong> {currentUser.email}
+            <strong>ایمیل : </strong> {currentUser.email}
           </p>
           <p>
-            <strong>نام نمایشی:</strong>{" "}
+            <strong>نام نمایشی : </strong>{" "}
             {currentUser.displayName || "هنوز وارد نشده"}
           </p>
           <p>
-            <strong>بیوگرافی:</strong> {currentUser.bio || "هنوز وارد نشده"}
+            <strong>بیوگرافی : </strong> {currentUser.bio || "هنوز وارد نشده"}
           </p>
           {currentUser.profilePicture && (
             <div style={{ marginTop: "10px" }}>

@@ -20,6 +20,7 @@ import {
   selectAuthError,
   selectIsLoggedIn,
 } from "./authSlice";
+import api from "../../utils/api";
 
 //=============================================
 //proxy vite.config.js
@@ -104,7 +105,7 @@ const RegisterPage = () => {
         bio,
         profilePicture,
       };
-      const response = await axios.post(`${API_URL}/register`, body, config);
+      const response = await api.post(`${API_URL}/register`, body);
 
       // console.log(response.data);
 
