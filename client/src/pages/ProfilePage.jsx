@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 //redux >>
 import { useDispatch, useSelector } from "react-redux";
 //selectors >>
@@ -20,7 +20,7 @@ import api from "../utils/api";
 // =============================================================
 
 const ProfilePage = () => {
-  //redux >>
+  //redux >>--------------------
   const dispatch = useDispatch();
 
   const currentUser = useSelector(selectCurrentUser);
@@ -30,6 +30,11 @@ const ProfilePage = () => {
 
   // navigate >>----------------------
   const navigate = useNavigate();
+
+  // useRef >>----------------------
+  const imgRef = useRef(null); // برای دسترسی به input فایل عکس پروفایل
+  const previewCanvasRef = useRef(null); // برای پیش نمایش عکس کراپ شده
+
   // states -----------------------------------------
   //To control the display of the edit form or profile information
   const [isEditing, setIsEditing] = useState(false); // برای کنترل نمایش فرم ویرایش
@@ -39,7 +44,15 @@ const ProfilePage = () => {
     bio: "",
     // profilePicture: '',
   });
-  // -----------------------------------------------------
+
+  // To control the display of the profile picture modal>>
+  const [showProfilePicModal, setShowProfilePicModal] = useState(false);
+  // To store the selected profile picture file>>
+  const [upimg, setUpimg] = useState(null); //before cropping
+  const [crop, setCrop] = useState({ unit: "%", width: 50, aspect: 1 / 1 }); //firs crop data
+  const [completedCrop, setCompletedCrop] = useState(null); //after cropping
+
+  // useEffect -----------------------------------------------------
   // وقتی کامپوننت لود میشه یا currentUser تغییر می کنه، formData رو با اطلاعات کاربر پر کن
   useEffect(() => {
     if (currentUser) {
@@ -55,8 +68,7 @@ const ProfilePage = () => {
     };
   }, [currentUser, dispatch]);
 
-
-
+  //conditions => ===========================================================
   // اگر در حال لود اولیه هستیم
   if (isLoading && !currentUser && !isLoggedIn) {
     return <div>در حال بارگذاری...</div>;
@@ -72,7 +84,7 @@ const ProfilePage = () => {
       </div>
     );
   }
-
+  //handling => ===========================================================
   //handle change>>------------------------------
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -146,6 +158,45 @@ const ProfilePage = () => {
     }
   };
 
+  //handle img upload>>------------------------------------
+  // این تابع برای باز کردن مودال آپلود عکس پروفایل استفاده میشه
+  const handleProfilePicChangeClick = () => {
+    setShowProfilePicModal(true);
+  };
+
+  // این تابع برای بستن مودال آپلود عکس پروفایل استفاده میشه
+  const handleCloseProfilePicModal = () => {
+    setShowProfilePicModal(false);
+    setUpimg(null); // reset the image
+    setCompletedCrop(null); // reset the crop
+  };
+
+  // این تابع برای انتخاب عکس پروفایل استفاده میشه
+  const onSelectFile = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      // اگر فایلی انتخاب شده باشد
+      const reader = new FileReader(); // برای خواندن فایل
+      reader.addEventListener("load", () => {
+        setUpimg(reader.result); // فایل انتخاب شده را در state ذخیره کن
+      });
+      reader.readAsDataURL(e.target.files[0]); // فایل را به صورت Data URL بخوان
+      e.target.value = null; // برای اینکه اگر کاربر دوباره همون فایل رو انتخاب کرد، onChange دوباره اجرا بشه
+    }
+  };
+
+  // تابع برای آپلود عکس کراپ شده (بعدا تکمیل میشه)
+  const handleUploadCroppedImage = async () => {
+    if (!completedCrop || !previewCanvasRef.current) {
+      console.log("crop not completed or canvas not available");
+      return; // اگر کراپ تکمیل نشده یا کانواس وجود ندارد، هیچ کاری نکن
+    }
+
+    // اینجا منطق تبدیل canvas به Blob و ارسال به سرور رو اضافه می کنیم
+    console.log("uplosding cropped image logic will be here ...");
+    // previewCanvasRef.current.toBlob(blob => { /* ارسال blob */ }, 'image/png', 0.8);
+    handleCloseProfilePicModal(); // بستن مودال بعد از آپلود (یا تلاش برای آپلود)
+  };
+
   //////////////////////////////////////////////////////////////
   return (
     <div
@@ -159,7 +210,7 @@ const ProfilePage = () => {
         lineHeight: "35px",
       }}
     >
-      <h2>پروفایل کاربر</h2>
+      <h2>User ProFile </h2>
       {isLoading && <p>در حال به‌روزرسانی...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
@@ -226,35 +277,71 @@ const ProfilePage = () => {
         // نمایش اطلاعات
         <div>
           <p>
-            <strong>نام کاربری : </strong> {currentUser.username}
+            <strong>username : </strong> {currentUser.username}
           </p>
           <p>
-            <strong>ایمیل : </strong> {currentUser.email}
+            <strong>email: </strong> {currentUser.email}
           </p>
           <p>
-            <strong>نام نمایشی : </strong>{" "}
+            <strong>displayName: </strong>
             {currentUser.displayName || "هنوز وارد نشده"}
           </p>
           <p>
-            <strong>بیوگرافی : </strong> {currentUser.bio || "هنوز وارد نشده"}
+            <strong>bio: </strong> {currentUser.bio || "هنوز وارد نشده"}
           </p>
-          {currentUser.profilePicture && (
-            <div style={{ marginTop: "10px" }}>
-              <p>
-                <strong>عکس پروفایل:</strong>
-              </p>
-              <img
-                src={currentUser.profilePicture}
-                alt="Profile"
-                style={{
-                  width: "100px",
-                  height: "100px",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                }}
-              />
-            </div>
-          )}
+          {/* div for profile pic >>--------------- */}
+          <div
+            style={{
+              marginTop: "10px",
+              position: "relative",
+              width: "50%",
+              height: "250px",
+              // border: "2px solid #ccc",
+            }}
+          >
+            <p>
+              <strong>profile Picture :</strong>
+            </p>
+            <img
+              src={
+                currentUser.profilePicture || "https://via.placeholder.com/100"
+              }
+              // alt="Profile"
+              style={{
+                width: "200px",
+                height: "200px",
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "2px solid #ccc",
+                position: "absolute",
+                bottom: "0",
+                right: "0",
+              }}
+            />
+            {/* button for change img >> */}
+            <button
+              onClick={handleProfilePicChangeClick}
+              style={{
+                position: "absolute",
+                bottom: "0",
+                right: "0",
+                padding: "5px 10px",
+                backgroundColor: "#007bff",
+                color: "white",
+                border: "1px solid #ccc",
+                borderRadius: "50%",
+                width: "30px",
+                height: "30px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+              }}
+            >
+              ✏️
+            </button>
+          </div>
           <button
             onClick={handleEditToggle}
             style={{
@@ -266,6 +353,82 @@ const ProfilePage = () => {
           >
             ویرایش پروفایل
           </button>
+        </div>
+      )}
+
+      {/* Modal for profile picture upload >> */}
+      {showProfilePicModal && (
+        // a div for modal>>
+        <div
+          style={{
+            position: "fixed",
+            top: "0",
+            left: "0",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000, // برای اطمینان از اینکه مودال بالای همه چیز نمایش داده شود
+          }}
+        >
+          {/* محتوای مودال */}
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "10px",
+              width: "90%",
+              maxWidth: "500px",
+              position: "relative",
+            }}
+          >
+            <h3>آپلود عکس پروفایل</h3>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={onSelectFile}
+              ref={imgRef}
+              style={{ marginBottom: "10px" ,border: "1px solid #ccc", padding: "5px" }}
+            />
+
+            <div
+              style={{
+                marginTop: "20px",
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+              }}
+            >
+              <button
+                onClick={handleUploadCroppedImage}
+                style={{
+                  padding: "8px 15px",
+                  backgroundColor: "#28a745",
+                  color: "white",
+                }}
+              >
+                save
+              </button>
+            </div>
+
+            <button
+              onClick={handleCloseProfilePicModal}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                padding: "5px 10px",
+                border: "2px solid #ccc",
+                color: "white",
+                borderRadius: "50%",
+                cursor: "pointer",
+              }}
+            >
+              ❌
+            </button>
+          </div>
         </div>
       )}
     </div>
