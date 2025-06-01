@@ -8,6 +8,9 @@ const theme = {
     error: "#dc3545",
     success: "#28a745",
     neumorphismBackground: "#e0e0e0",
+    neumorphismBackground: "#e0e5ec",
+    neumorphismShadowDark: "#a3b1c6", 
+    neumorphismShadowLight: "#ffffff",
   },
   fonts: {
     main: "Poppins, sans-serif",
