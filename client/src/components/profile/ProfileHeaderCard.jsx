@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 
 // auth -----------------------------
 import { selectCurrentUser } from "../../features/auth/authSlice";
+import ProfileAvatar from "./ProfileAvatar";
 //components ---------------------------
 
 ////////////////////////////////////////////////////////
@@ -56,7 +57,7 @@ export default function ProfileHeaderCard() {
   //////////////////////////////////////////////////////////
   return (
     <CardContainer>
-      {/* <ProfileAvatar imageUrl={currentUser.profilePicture} altText={currentUser.displayName || currentUser.username} /> */}
+      <ProfileAvatar imageUrl={currentUser.profilePicture} altText={currentUser.displayName || currentUser.username} />
       <div>اینجا عکس پروفایل (ProfileAvatar) میاد</div>
       {/* <UserInfoText
         displayName={currentUser.displayName || currentUser.username}
