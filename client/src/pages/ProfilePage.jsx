@@ -23,6 +23,7 @@ import "react-image-crop/dist/ReactCrop.css"; // استایل‌های پیش‌
 
 //styles >>
 import styled from "styled-components";
+import ProfileHeaderCard from "../components/profile/ProfileHeaderCard";
 /////////////////////////////////////////////////////////////////////////////////
 // style coomponent >>
 const ProfilePageContainer = styled.div`
@@ -452,8 +453,16 @@ const ProfilePage = () => {
     //   )}
     // </div>
     <ProfilePageContainer>
-      <h1>{currentUser.displayName || currentUser.username}'s Profile</h1>
-      <p>اینجا صفحه پروفایل خواهد بود.</p>
+      <ProfileHeaderCard />
+      {/* اینجا بعدا کامپوننت های دیگه مثل ImageGrid و ProfileActions میان */}
+      {/* <div style={{ marginTop: '30px', width: '100%', maxWidth: '700px' }}>
+        <h3>عکس های من</h3>
+        <p>اینجا گرید عکس ها نمایش داده میشه...</p>
+      </div>
+      <div style={{ marginTop: '30px' }}>
+        <button>ویرایش پروفایل (دکمه اصلی)</button>
+        <button style={{ marginLeft: '10px' }}>See All My Pics</button>
+      </div> */}
     </ProfilePageContainer>
   );
 };

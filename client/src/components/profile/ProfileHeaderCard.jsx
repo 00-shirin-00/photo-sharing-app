@@ -55,21 +55,26 @@ export default function ProfileHeaderCard() {
   //conditions -------------------
   if (!currentUser) return null;
 
+    //handle -----------------------
+    const handleEditAvatarClick = () => {
+      // اینجا بعدا منطق باز کردن مودال آپلود عکس پروفایل رو اضافه می کنیم
+      console.log("Edit avatar clicked!");
+    };
   //////////////////////////////////////////////////////////
   return (
     <CardContainer>
-      <ProfileAvatar imageUrl={currentUser.profilePicture} altText={currentUser.displayName || currentUser.username} />
+      <ProfileAvatar
+        imageUrl={currentUser.profilePicture}
+        altText={currentUser.displayName || currentUser.username}
+        onEditClick={handleEditAvatarClick}
+      />
       <div>اینجا عکس پروفایل (ProfileAvatar) میاد</div>
       <UserInfoText
         displayName={currentUser.displayName || currentUser.username}
         username={currentUser.username}
         bio={currentUser.bio}
       />
-      <div>
-        <h3>{currentUser.displayName || currentUser.username}</h3>
-        <p>@{currentUser.username}</p>
-        <p>{currentUser.bio || "بیوگرافی هنوز وارد نشده."}</p>
-      </div>
+    
     </CardContainer>
   );
 }
