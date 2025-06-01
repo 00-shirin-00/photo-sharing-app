@@ -44,6 +44,7 @@ const Logo = styled(Link)`
   font-weight: bold;
   color: white;
   text-decoration: none;
+  padding: ${(props) => props.theme.spacings.large || "24px"};
 `;
 
 export default function Header() {

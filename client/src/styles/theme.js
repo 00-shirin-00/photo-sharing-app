@@ -7,6 +7,7 @@ const theme = {
     textLight: "#f8f9fa",
     error: "#dc3545",
     success: "#28a745",
+    neumorphismBackground: "#e0e0e0",
   },
   fonts: {
     main: "Poppins, sans-serif",

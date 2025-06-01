@@ -21,9 +21,22 @@ import axios from "axios";
 import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css"; // استایل‌های پیش‌فرض react-image-crop را وارد می‌کنیم
 
+//styles >>
+import styled from "styled-components";
 /////////////////////////////////////////////////////////////////////////////////
+// style coomponent >>
+const ProfilePageContainer = styled.div`
+  min-height: calc(100vh - 60px); // 60px ارتفاع Navbar (باید دقیق تنظیم بشه)
+  background-color: ${(props) =>
+    props.theme.colors.neumorphismBackground ||
+    "#e0e5ec"}; // رنگ پس زمینه اصلی برای Neumorphism
+  padding: ${(props) => props.theme.spacings.large || "24px"};
+  display: flex;
+  flex-direction: column;
+  align-items: center; // برای اینکه محتوا وسط چین باشه (اگر لازمه)
+`;
 
-// 📌 تابع کمکی برای محاسبه کراپ اولیه 
+// 📌 تابع کمکی برای محاسبه کراپ اولیه
 //🔷 این تابع یک کراپ مربعی و وسط‌چین روی عکس تنظیم می‌کنه.
 function centerAspectCropInPixels(mediaWidth, mediaHeight, aspect = 1) {
   const initialPercentage = 0.8; // اندازه اولیه کراپ را به صورت درصدی مشخص می‌کنیم
@@ -95,13 +108,13 @@ const ProfilePage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) dispatch(clearAuthError());
   };
-// ---------------
+  // ---------------
   // 📌 جابه‌جا کردن حالت ویرایش
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
     if (isEditing && currentUser) {
       setFormData({
-        displayName: currentUser.displayName || " is empty",
+        displayName: currentUser.displayName || "",
         bio: currentUser.bio || "",
       });
       dispatch(clearAuthError());
@@ -113,7 +126,7 @@ const ProfilePage = () => {
     e.preventDefault();
     dispatch(authRequest());
     try {
-      const response = await axios.put(
+      const response = await axios.patch(
         "/api/users/profile",
         {
           displayName: formData.displayName,
@@ -256,186 +269,192 @@ const ProfilePage = () => {
   };
   //////////////////////////////////////////////////////////////////////////////
   return (
-    <div
-      style={{
-        padding: "20px",
-        maxWidth: "600px",
-        margin: "auto",
-        textAlign: "center",
-      }}
-    >
-      <h2>پروفایل کاربر</h2>
-      {isLoading && <p>در حال انجام عملیات...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+    // <div
+    //   style={{
+    //     padding: "20px",
+    //     maxWidth: "600px",
+    //     margin: "auto",
+    //     textAlign: "center",
+    //   }}
+    // >
+    //   <h2>پروفایل کاربر</h2>
+    //   {isLoading && <p>در حال انجام عملیات...</p>}
+    //   {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <div
-        style={{
-          marginBottom: "20px",
-          position: "relative",
-          width: "150px",
-          height: "150px",
-          display: "inline-block",
-        }}
-      >
-        <img
-          src={currentUser.profilePicture || "/assets/img/wal.jfif"}
-          alt="Profile"
-          style={{
-            width: "100%",
-            height: "100%",
-            borderRadius: "50%",
-            objectFit: "cover",
-            border: "3px solid #ddd",
-          }}
-        />
-        <button
-          onClick={handleProfilePicChangeClick}
-          title="تغییر عکس پروفایل"
-          style={{
-            position: "absolute",
-            bottom: "5px",
-            right: "5px",
-            background: "white",
-            border: "1px solid #ccc",
-            borderRadius: "50%",
-            width: "35px",
-            height: "35px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            fontSize: "18px",
-          }}
-        >
-          ✏️
-        </button>
-      </div>
+    //   <div
+    //     style={{
+    //       marginBottom: "20px",
+    //       position: "relative",
+    //       width: "150px",
+    //       height: "150px",
+    //       display: "inline-block",
+    //     }}
+    //   >
+    //     <img
+    //       src={currentUser.profilePicture || "/assets/img/wal.jfif"}
+    //       alt="Profile"
+    //       style={{
+    //         width: "100%",
+    //         height: "100%",
+    //         borderRadius: "50%",
+    //         objectFit: "cover",
+    //         border: "3px solid #ddd",
+    //       }}
+    //     />
+    //     <button
+    //       onClick={handleProfilePicChangeClick}
+    //       title="تغییر عکس پروفایل"
+    //       style={{
+    //         position: "absolute",
+    //         bottom: "5px",
+    //         right: "5px",
+    //         background: "white",
+    //         border: "1px solid #ccc",
+    //         borderRadius: "50%",
+    //         width: "35px",
+    //         height: "35px",
+    //         display: "flex",
+    //         alignItems: "center",
+    //         justifyContent: "center",
+    //         cursor: "pointer",
+    //         fontSize: "18px",
+    //       }}
+    //     >
+    //       ✏️
+    //     </button>
+    //   </div>
+    //   {/* ========= Editing ====================================================== */}
+    //   {isEditing ? (
+    //     <form
+    //       onSubmit={handleSubmitEditText}
+    //       style={{
+    //         display: "flex",
+    //         flexDirection: "column",
+    //         gap: "15px",
+    //         border: "1px solid #eee",
+    //         padding: "20px",
+    //         borderRadius: "8px",
+    //       }}
+    //     >
+    //       <input
+    //         type="text"
+    //         name="displayName"
+    //         value={formData.displayName}
+    //         onChange={handleChange}
+    //         placeholder="نام نمایشی"
+    //       />
+    //       <textarea
+    //         name="bio"
+    //         value={formData.bio}
+    //         onChange={handleChange}
+    //         placeholder="بیوگرافی"
+    //       />
+    //       <div style={{ display: "flex", gap: "10px" }}>
 
-      {isEditing ? (
-        <form
-          onSubmit={handleSubmitEditText}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "15px",
-            border: "1px solid #eee",
-            padding: "20px",
-            borderRadius: "8px",
-          }}
-        >
-          <input
-            type="text"
-            name="displayName"
-            value={formData.displayName}
-            onChange={handleChange}
-            placeholder="نام نمایشی"
-          />
-          <textarea
-            name="bio"
-            value={formData.bio}
-            onChange={handleChange}
-            placeholder="بیوگرافی"
-          />
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button type="submit" disabled={isLoading}>
-              {isLoading ? "درحال ذخیره..." : "ذخیره تغییرات"}
-            </button>
-            <button
-              type="button"
-              onClick={handleEditToggle}
-              disabled={isLoading}
-            >
-              انصراف
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div>
-          <p>
-            <strong>نام کاربری:</strong> {currentUser.username}
-          </p>
-          <p>
-            <strong>ایمیل:</strong> {currentUser.email}
-          </p>
-          <p>
-            <strong>نام نمایشی:</strong>{" "}
-            {currentUser.displayName || "وارد نشده"}
-          </p>
-          <p>
-            <strong>بیوگرافی:</strong> {currentUser.bio || "وارد نشده"}
-          </p>
-          <button onClick={handleEditToggle}>ویرایش اطلاعات</button>
-        </div>
-      )}
+    //         <button type="submit" disabled={isLoading}>
+    //           {isLoading ? "درحال ذخیره..." : "ذخیره تغییرات"}
+    //         </button>
 
-      {showProfilePicModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.7)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              width: "90%",
-              maxWidth: "500px",
-            }}
-          >
-            <h3>تغییر عکس پروفایل</h3>
-            <input type="file" accept="image/*" onChange={onSelectFile} />
-            {upImg && (
-              <ReactCrop
-                crop={crop}
-                onChange={(c, pc) => setCrop(pc)}
-                onComplete={(c) => setCompletedCrop(c)}
-                aspect={1}
-                circularCrop
-              >
-                <img
-                  ref={imgRef}
-                  src={upImg}
-                  alt="برای کراپ"
-                  style={{ maxHeight: "300px" }}
-                  onLoad={onImageLoad}
-                />
-              </ReactCrop>
-            )}
-            {completedCrop && (
-              <canvas
-                ref={previewCanvasRef}
-                style={{
-                  border: "1px solid black",
-                  width: "150px",
-                  height: "150px",
-                  borderRadius: "50%",
-                }}
-              />
-            )}
-            <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-              <button
-                onClick={handleUploadCroppedImage}
-                disabled={!completedCrop || isLoading}
-              >
-                {isLoading ? "در حال ذخیره..." : "ذخیره عکس"}
-              </button>
-              <button onClick={handleCloseProfilePicModal} disabled={isLoading}>
-                انصراف
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    //         <button
+    //           type="button"
+    //           onClick={handleEditToggle}
+    //           disabled={isLoading}
+    //         >
+    //           انصراف
+    //         </button>
+    //       </div>
+    //     </form>
+    //   ) : (
+    //     <div>
+    //       <p>
+    //         <strong>نام کاربری:</strong> {currentUser.username}
+    //       </p>
+    //       <p>
+    //         <strong>ایمیل:</strong> {currentUser.email}
+    //       </p>
+    //       <p>
+    //         <strong>نام نمایشی:</strong>{" "}
+    //         {currentUser.displayName || "وارد نشده"}
+    //       </p>
+    //       <p>
+    //         <strong>بیوگرافی:</strong> {currentUser.bio || "وارد نشده"}
+    //       </p>
+    //       <button onClick={handleEditToggle}>ویرایش اطلاعات</button>
+    //     </div>
+    //   )}
+
+    //   {showProfilePicModal && (
+    //     <div
+    //       style={{
+    //         position: "fixed",
+    //         top: 0,
+    //         left: 0,
+    //         width: "100%",
+    //         height: "100%",
+    //         backgroundColor: "rgba(0,0,0,0.7)",
+    //         display: "flex",
+    //         alignItems: "center",
+    //         justifyContent: "center",
+    //       }}
+    //     >
+    //       <div
+    //         style={{
+    //           background: "white",
+    //           padding: "20px",
+    //           borderRadius: "8px",
+    //           width: "90%",
+    //           maxWidth: "500px",
+    //         }}
+    //       >
+    //         <h3>تغییر عکس پروفایل</h3>
+    //         <input type="file" accept="image/*" onChange={onSelectFile} />
+    //         {upImg && (
+    //           <ReactCrop
+    //             crop={crop}
+    //             onChange={(c, pc) => setCrop(pc)}
+    //             onComplete={(c) => setCompletedCrop(c)}
+    //             aspect={1}
+    //             circularCrop
+    //           >
+    //             <img
+    //               ref={imgRef}
+    //               src={upImg}
+    //               alt="برای کراپ"
+    //               style={{ maxHeight: "300px" }}
+    //               onLoad={onImageLoad}
+    //             />
+    //           </ReactCrop>
+    //         )}
+    //         {completedCrop && (
+    //           <canvas
+    //             ref={previewCanvasRef}
+    //             style={{
+    //               border: "1px solid black",
+    //               width: "150px",
+    //               height: "150px",
+    //               borderRadius: "50%",
+    //             }}
+    //           />
+    //         )}
+    //         <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+    //           <button
+    //             onClick={handleUploadCroppedImage}
+    //             disabled={!completedCrop || isLoading}
+    //           >
+    //             {isLoading ? "در حال ذخیره..." : "ذخیره عکس"}
+    //           </button>
+    //           <button onClick={handleCloseProfilePicModal} disabled={isLoading}>
+    //             انصراف
+    //           </button>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   )}
+    // </div>
+    <ProfilePageContainer>
+      <h1>{currentUser.displayName || currentUser.username}'s Profile</h1>
+      <p>اینجا صفحه پروفایل خواهد بود.</p>
+    </ProfilePageContainer>
   );
 };
 
