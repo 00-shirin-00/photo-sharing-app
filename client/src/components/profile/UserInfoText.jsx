@@ -30,8 +30,8 @@ const UserInfoText = ({ displayName, username, bio }) => {
   return (
     <TextContainer>
       <DisplayName>{displayName}</DisplayName>
-      <Username>@{username}</Username>
-      {bio && <Bio>{bio}</Bio>}
+      {/* <Username>{username}</Username>
+      {bio && <Bio>{bio}</Bio>} */}
     </TextContainer>
   );
 };

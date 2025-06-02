@@ -39,7 +39,7 @@ const ProfilePageContainer = styled.div`
 
 // --------button----------------
 const NeumorphicButton = styled.button`
-  padding: ${(props) => props.theme.spacings.medium || "12px"},
+  padding: ${(props) => props.theme.spacings.medium || "12px"};
     ${(props) => props.theme.spacings.large || "20px"};
   border-radius: 10px;
   background-color: ${(props) =>
@@ -75,6 +75,7 @@ const NeumorphicButton = styled.button`
   }
 `;
 //-----------ActionsContainer------------
+// برای نگهداری و چیدمان دکمه‌های پایین 
 const ActionsContainer = styled.div`
   margin-top: ${(props) => props.theme.spacings.large || "24px"};
   display: flex;
@@ -126,19 +127,13 @@ const ProfilePage = () => {
   const imgRef = useRef(null); // ارجاع به المان img برای دسترسی مستقیم
   const previewCanvasRef = useRef(null); // ارجاع به المان canvas برای نمایش پیش‌نمایش
 
-  //useEfect ========= Data =====================================
-  // 📌 پر کردن اولیه فرم هنگام لود کاربر
-  useEffect(() => {
-    if (currentUser) {
-      setFormData({
-        displayName: currentUser.displayName || "",
-        bio: currentUser.bio || "",
-      });
-    }
-    return () => dispatch(clearAuthError());
-  }, [currentUser, dispatch]);
-
   //conditoins ---------------------------------------------------------
+  // اگر هنوز در حال بررسی هستیم (در حال لود شدن هستیم)
+  if (isLoading) return <div>در حال بررسی وضعیت کاربر...</div>;
+
+  // اگر کاربر لاگین نیست یا currentUser وجود نداره
+  if (!isLoggedIn || !currentUser) return <Navigate to="/login" replace />;
+
   // 📌 هدایت به صفحه لاگین اگر لاگین نشده باشد
   if (!isLoggedIn && !isLoading && !currentUser)
     return <Navigate to="/login" replace />;
@@ -151,11 +146,6 @@ const ProfilePage = () => {
       </div>
     );
 
-  // اگر هنوز در حال بررسی هستیم (در حال لود شدن هستیم)
-  if (isLoading) return <div>در حال بررسی وضعیت کاربر...</div>;
-
-  // اگر کاربر لاگین نیست یا currentUser وجود نداره
-  if (!isLoggedIn || !currentUser) return <Navigate to="/login" replace />;
 
   //Handles >> ============================================================
   // 📌 هندل تغییر مقادیر فرم
@@ -329,6 +319,18 @@ const ProfilePage = () => {
       );
     }
   }, [completedCrop]);
+
+  //useEfect ========= Data =====================================
+  // 📌 پر کردن اولیه فرم هنگام لود کاربر
+  useEffect(() => {
+    if (currentUser) {
+      setFormData({
+        displayName: currentUser.displayName || "",
+        bio: currentUser.bio || "",
+      });
+    }
+    return () => dispatch(clearAuthError());
+  }, [currentUser, dispatch]);
 
   //////////////////////////////////////////////////////////////////////////////
   return (
@@ -578,13 +580,12 @@ const ProfilePage = () => {
             <strong>ایمیل:</strong> {currentUser.email}
           </p>
           <p>
-            <strong>نام نمایشی:</strong> 
+            <strong>نام نمایشی:</strong>
             {currentUser.displayName || "وارد نشده"}
           </p>
           <p>
             <strong>بیوگرافی:</strong> {currentUser.bio || "وارد نشده"}
           </p>
-       
         </div>
       )}
 
@@ -605,7 +606,7 @@ const ProfilePage = () => {
       <ActionsContainer>
         {!isEditing && ( // دکمه ویرایش پروفایل رو فقط وقتی در حالت نمایش هستیم نشون بده
           <NeumorphicButton onClick={handleEditToggle}>
-            ویرایش پروفایل
+            edit Prifile{" "}
           </NeumorphicButton>
         )}
         <NeumorphicButton onClick={handleSeeAllPics}>

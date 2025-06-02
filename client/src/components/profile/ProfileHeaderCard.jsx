@@ -22,9 +22,7 @@ const CardContainer = styled.div`
   width: 100%;
   /* min-height: calc(80vh - 60px); */
   max-width: 700px;
-  // === افکت سایه Neumorphism (حالت بیرون زده یا Flat) ===
-  // این مقادیر رو باید با توجه به رنگ پس زمینه و سلیقه ات تنظیم کنی
-  // می تونیم اینها رو هم در theme.js به عنوان متغیر تعریف کنیم
+
   box-shadow:
     // سایه تیره (پایین-راست)
     6px 6px 12px
@@ -33,11 +31,13 @@ const CardContainer = styled.div`
     -6px -6px 12px
       ${(props) => props.theme.colors.neumorphismShadowLight || "#ffffff"};
 
-  display: flex; // برای چیدمان عکس و متن کنار هم
-  align-items: center; // عمودی وسط چین
+  display: flex;
+  align-items: center;
+  justify-content:space-evenly;
+
   gap: ${(props) =>
     props.theme.spacings.medium || "16px"}; // فاصله بین عکس و متن
-
+  /* -------------------------------------------------------- */
   // برای حالت فرورفته (inset/pressed):
   /*
   box-shadow:
@@ -46,6 +46,7 @@ const CardContainer = styled.div`
     inset -6px -6px 12px ${(props) =>
     props.theme.colors.neumorphismShadowLight || "#ffffff"};
   */
+  /* -------------------------------------------------------- */
 `;
 //////////////////////////////////////////////////////////
 export default function ProfileHeaderCard() {
@@ -68,11 +69,10 @@ export default function ProfileHeaderCard() {
         altText={currentUser.displayName || currentUser.username}
         onEditClick={handleEditAvatarClick}
       />
-      <div>اینجا عکس پروفایل (ProfileAvatar) میاد</div>
       <UserInfoText
         displayName={currentUser.displayName || currentUser.username}
-        username={currentUser.username}
-        bio={currentUser.bio}
+        // username={currentUser.username}
+        // bio={currentUser.bio}
       />
     </CardContainer>
   );
