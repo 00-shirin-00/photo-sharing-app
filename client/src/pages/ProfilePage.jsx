@@ -14,7 +14,7 @@ import {
   clearAuthError,
 } from "../features/auth/authSlice";
 //route >>
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 // more >>
 import axios from "axios";
 //img crop>>
@@ -22,21 +22,69 @@ import ReactCrop, { centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css"; // استایل‌های پیش‌فرض react-image-crop را وارد می‌کنیم
 
 //styles >>
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import ProfileHeaderCard from "../components/profile/ProfileHeaderCard";
 /////////////////////////////////////////////////////////////////////////////////
 // style coomponent >>
+// -----Container----------
 const ProfilePageContainer = styled.div`
-  min-height: calc(100vh - 60px); // 60px ارتفاع Navbar (باید دقیق تنظیم بشه)
+  min-height: calc(100vh - 60px);
   background-color: ${(props) =>
-    props.theme.colors.neumorphismBackground ||
-    "#e0e5ec"}; // رنگ پس زمینه اصلی برای Neumorphism
+    props.theme.colors.neumorphismBackground || "#e0e5ec"};
   padding: ${(props) => props.theme.spacings.large || "24px"};
   display: flex;
   flex-direction: column;
-  align-items: center; // برای اینکه محتوا وسط چین باشه (اگر لازمه)
+  align-items: center;
 `;
 
+// --------button----------------
+const NeumorphicButton = styled.button`
+  padding: ${(props) => props.theme.spacings.medium || "12px"},
+    ${(props) => props.theme.spacings.large || "20px"};
+  border-radius: 10px;
+  background-color: ${(props) =>
+    props.theme.colors.neumorphismBackground || "#e0e5ec"};
+  color: ${(props) => props.theme.colors.text || "#333"};
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+  //   (بیرون زده)
+  box-shadow: 5px 5px 10px
+      ${(props) => props.theme.colors.neumorphismShadowDark || "#a3b1c6"},
+    -5px -5px 10px
+      ${(props) => props.theme.colors.neumorphismShadowLight || "#ffffff"};
+
+  // (فرو رفته)
+  &:active,
+  &.active {
+    box-shadow: inset 5px 5px 10px
+        ${(props) => props.theme.colors.neumorphismShadowDark || "#a3b1c6"},
+      inset -5px -5px 10px
+        ${(props) => props.theme.colors.neumorphismShadowLight || "#ffffff"};
+    // برای اینکه متن هم کمی فرو رفته به نظر بیاد
+    text-shadow: 1px 1px 1px
+      ${(props) => props.theme.colors.neumorphismShadowDark || "#a3b1c6"};
+    color: ${(props) => props.theme.colors.textLight || "#777"};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none; // در حالت غیرفعال سایه نداشته باشه یا سایه تخت داشته باشه
+  }
+`;
+//-----------ActionsContainer------------
+const ActionsContainer = styled.div`
+  margin-top: ${(props) => props.theme.spacings.large || "24px"};
+  display: flex;
+  gap: ${(props) => props.theme.spacings.medium || "16px"};
+  justify-content: center;
+  width: 100%;
+  max-width: 700px;
+`;
+
+/////////////////////////////////////////////////////////////////////////////////
 // 📌 تابع کمکی برای محاسبه کراپ اولیه
 //🔷 این تابع یک کراپ مربعی و وسط‌چین روی عکس تنظیم می‌کنه.
 function centerAspectCropInPixels(mediaWidth, mediaHeight, aspect = 1) {
@@ -64,7 +112,8 @@ const ProfilePage = () => {
   const isLoggedIn = useSelector(selectIsLoggedIn); // بررسی لاگین بودن
   const isLoading = useSelector(selectAuthLoading); // بررسی وضعیت لودینگ
   const error = useSelector(selectAuthError); // بررسی وجود خطا
-
+  // navigation -------------------------------------------
+  const navigate = useNavigate();
   //stats ----------------------------------------------------------
   const [isEditing, setIsEditing] = useState(false); // مدیریت حالت ویرایش متن
   const [formData, setFormData] = useState({ displayName: "", bio: "" }); // داده‌های فرم ویرایش پروفایل
@@ -95,7 +144,12 @@ const ProfilePage = () => {
     return <Navigate to="/login" replace />;
 
   // 📌 نمایش پیام لودینگ اگر اطلاعات هنوز نیامده
-  if (!currentUser) return <div>در حال بارگذاری اطلاعات کاربر...</div>;
+  if (!currentUser)
+    return (
+      <div style={{ textAlign: "center", padding: "50px" }}>
+        در حال بارگذاری اطلاعات کاربر...
+      </div>
+    );
 
   // اگر هنوز در حال بررسی هستیم (در حال لود شدن هستیم)
   if (isLoading) return <div>در حال بررسی وضعیت کاربر...</div>;
@@ -159,6 +213,7 @@ const ProfilePage = () => {
     setCrop(undefined);
     setCompletedCrop(null);
   };
+
   // ---------------------
   // 📌 وقتی کاربر فایل تصویر انتخاب می‌کند
   const onSelectFile = (e) => {
@@ -209,25 +264,14 @@ const ProfilePage = () => {
     );
     ctx.restore();
   };
-  // useEffect >> ============== canvas =======================
 
-  // 📌 هر بار completedCrop تغییر کند، canvas آپدیت شود
-  useEffect(() => {
-    if (
-      completedCrop?.width &&
-      completedCrop?.height &&
-      imgRef.current &&
-      previewCanvasRef.current
-    ) {
-      drawCanvasPreview(
-        imgRef.current,
-        previewCanvasRef.current,
-        completedCrop
-      );
-    }
-  }, [completedCrop]);
+  //---------------------
+  const handleSeeAllPics = () => {
+    navigate(`/users/${currentUser.username}/images`);
+    console.log("See all pics clicked");
+  };
 
-  // Handles ----------------------------------------------------------
+  // Handles server----------------------------------------------------------
   // 📌 ارسال عکس کراپ شده به سرور
   const handleUploadCroppedImage = async () => {
     if (!completedCrop || !previewCanvasRef.current) {
@@ -268,6 +312,24 @@ const ProfilePage = () => {
       1.0
     );
   };
+
+  // useEffect >> ============== canvas =======================
+  // 📌 هر بار completedCrop تغییر کند، canvas آپدیت شود
+  useEffect(() => {
+    if (
+      completedCrop?.width &&
+      completedCrop?.height &&
+      imgRef.current &&
+      previewCanvasRef.current
+    ) {
+      drawCanvasPreview(
+        imgRef.current,
+        previewCanvasRef.current,
+        completedCrop
+      );
+    }
+  }, [completedCrop]);
+
   //////////////////////////////////////////////////////////////////////////////
   return (
     // <div
@@ -353,6 +415,8 @@ const ProfilePage = () => {
     //       <div style={{ display: "flex", gap: "10px" }}>
 
     //         <button type="submit" disabled={isLoading}>
+
+    //           {/* ========== Loading ================================= */}
     //           {isLoading ? "درحال ذخیره..." : "ذخیره تغییرات"}
     //         </button>
 
@@ -454,15 +518,100 @@ const ProfilePage = () => {
     // </div>
     <ProfilePageContainer>
       <ProfileHeaderCard />
-      {/* اینجا بعدا کامپوننت های دیگه مثل ImageGrid و ProfileActions میان */}
-      {/* <div style={{ marginTop: '30px', width: '100%', maxWidth: '700px' }}>
+      {/* نمایش فرم ویرایش یا اطلاعات کاربر */}
+      {isEditing ? (
+        <form
+          onSubmit={handleSubmitEditText}
+          style={{
+            width: "100%",
+            maxWidth: "700px",
+            marginTop: "20px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "15px",
+            border: "1px solid #eee",
+            padding: "20px",
+            borderRadius: "8px",
+          }}
+        >
+          <input
+            type="text"
+            name="displayName"
+            value={formData.displayName}
+            onChange={handleChange}
+            placeholder="نام نمایشی"
+          />
+          <textarea
+            name="bio"
+            value={formData.bio}
+            onChange={handleChange}
+            placeholder="بیوگرافی"
+          />
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              marginTop: "20px",
+              justifyContent: "flex-end",
+            }}
+          >
+            <NeumorphicButton type="submit" disabled={isLoading}>
+              {isLoading ? "save update" : "saving ..."}
+            </NeumorphicButton>
+
+            <NeumorphicButton
+              type="button"
+              onClick={handleEditToggle}
+              disabled={isLoading}
+            >
+              cancle
+            </NeumorphicButton>
+          </div>
+        </form>
+      ) : (
+        <div style={{ width: "100%", maxWidth: "700px", marginTop: "20px" }}>
+          {/* ... نمایش اطلاعات کاربر ... */}
+          <p>
+            <strong>نام کاربری:</strong> {currentUser.username}
+          </p>
+          <p>
+            <strong>ایمیل:</strong> {currentUser.email}
+          </p>
+          <p>
+            <strong>نام نمایشی:</strong> 
+            {currentUser.displayName || "وارد نشده"}
+          </p>
+          <p>
+            <strong>بیوگرافی:</strong> {currentUser.bio || "وارد نشده"}
+          </p>
+       
+        </div>
+      )}
+
+      {/* گالری عکس ها (بعدا اضافه میشه) */}
+      <div
+        style={{
+          marginTop: "30px",
+          width: "100%",
+          maxWidth: "700px",
+          textAlign: "center",
+        }}
+      >
         <h3>عکس های من</h3>
-        <p>اینجا گرید عکس ها نمایش داده میشه...</p>
+        <p>[اینجا گرید عکس ها نمایش داده میشه...]</p>
       </div>
-      <div style={{ marginTop: '30px' }}>
-        <button>ویرایش پروفایل (دکمه اصلی)</button>
-        <button style={{ marginLeft: '10px' }}>See All My Pics</button>
-      </div> */}
+
+      {/* دکمه های پایین صفحه */}
+      <ActionsContainer>
+        {!isEditing && ( // دکمه ویرایش پروفایل رو فقط وقتی در حالت نمایش هستیم نشون بده
+          <NeumorphicButton onClick={handleEditToggle}>
+            ویرایش پروفایل
+          </NeumorphicButton>
+        )}
+        <NeumorphicButton onClick={handleSeeAllPics}>
+          مشاهده همه عکس‌ها
+        </NeumorphicButton>
+      </ActionsContainer>
     </ProfilePageContainer>
   );
 };

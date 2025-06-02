@@ -20,8 +20,8 @@ const CardContainer = styled.div`
   padding: ${(props) => props.theme.spacings.large || "24px"};
   margin-bottom: ${(props) => props.theme.spacings.large || "24px"};
   width: 100%;
-  max-width: 700px; 
-
+  /* min-height: calc(80vh - 60px); */
+  max-width: 700px;
   // === افکت سایه Neumorphism (حالت بیرون زده یا Flat) ===
   // این مقادیر رو باید با توجه به رنگ پس زمینه و سلیقه ات تنظیم کنی
   // می تونیم اینها رو هم در theme.js به عنوان متغیر تعریف کنیم
@@ -55,11 +55,11 @@ export default function ProfileHeaderCard() {
   //conditions -------------------
   if (!currentUser) return null;
 
-    //handle -----------------------
-    const handleEditAvatarClick = () => {
-      // اینجا بعدا منطق باز کردن مودال آپلود عکس پروفایل رو اضافه می کنیم
-      console.log("Edit avatar clicked!");
-    };
+  //handle -----------------------
+  const handleEditAvatarClick = () => {
+    // اینجا بعدا منطق باز کردن مودال آپلود عکس پروفایل رو اضافه می کنیم
+    console.log("Edit avatar clicked!");
+  };
   //////////////////////////////////////////////////////////
   return (
     <CardContainer>
@@ -74,7 +74,6 @@ export default function ProfileHeaderCard() {
         username={currentUser.username}
         bio={currentUser.bio}
       />
-    
     </CardContainer>
   );
 }
